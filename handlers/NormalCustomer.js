@@ -3,10 +3,12 @@ const {server} = require('../configure/index')
 
 class NormalCustomer{
     constructor(){
+        this.names = [];
     }
 
     consume(msg){
-        console.log(`${server.port} ==> ${msg.content.toString()}`);
+        this.names.push(msg);
+        console.log(`${server.port} ==> ${msg.content.toString()} | ${JSON.stringify(this.names)}`);
     }
 
 }

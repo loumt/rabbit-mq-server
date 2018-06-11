@@ -13,7 +13,7 @@ var setting = require('../configure/index');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(setting.port || '3000');
+var port = normalizePort(setting.port || '4000');
 app.set('port', port);
 
 /**

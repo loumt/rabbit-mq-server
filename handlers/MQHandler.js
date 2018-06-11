@@ -71,13 +71,19 @@ class MQHandler extends EventEmitter {
         this.emit('connect-close');
     }
 
-    oncreateChannel(channel) {
+    onCreateChannel(channel) {
         this.channel = channel;
         this.channel.on('close', () => {
             this.emit('channel-close')
         })
         this.channel.on('error', () => {
             this.emit('channel-error')
+        })
+        this.channel.on('return', () => {
+            this.emit('channel-return')
+        })
+        this.channel.on('drain', () => {
+            this.emit('channel-drain')
         })
 
         this.createQueue();
@@ -93,7 +99,7 @@ class MQHandler extends EventEmitter {
     createChannel(connect) {
         let createChannelPromise = connect.createChannel();
         createChannelPromise.then(channel => {
-            this.oncreateChannel(channel)
+            this.onCreateChannel(channel)
             this.emit('channel-ready');
         }).catch(e => {
             this.oncreateChannelError(e)
