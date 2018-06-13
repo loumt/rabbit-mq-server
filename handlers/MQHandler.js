@@ -92,6 +92,15 @@ class MQHandler extends EventEmitter {
         this.emit('ready')
     }
 
+    createReplyQueue(queueName){
+        this.channel.assertQueue(queueName, {durable: false});
+        this.channel.prefetch(1);
+    }
+
+    sendMsgToQueueWithReply(queueName,replyQueueName,content){
+        this.channel.sendToQueue(queueName,content,{replyTo:replyQueue})
+    }
+
     oncreateChannelError(e) {
         this.emit('channel-create-error');
     }
@@ -126,6 +135,10 @@ class MQHandler extends EventEmitter {
         }).catch(e=>{
             this.emit('exchange-create-error')
         })
+    }
+
+    customerHandler(targetQueueName,customerHandler){
+        this.channel.consume(targetQueueName,customerHandler)
     }
 
     deleteQueue() {

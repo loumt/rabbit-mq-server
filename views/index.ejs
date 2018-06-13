@@ -7,14 +7,40 @@
 <body>
 <h1><%= title %></h1>
 <p>Welcome to <%= title %></p>
+<input type="text" id="msg">
 <button onclick="sendMsg()">发送消息</button>
+<button onclick="sendMsg2()">test</button>
 </body>
 <script src="https://cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script>
 <script>
-    function sendMsg() {
-       $.ajax({
+    console.log($);
 
-       })
+    function sendMsg() {
+        $.ajax({
+            url: '/api/message/send',
+            type: 'post',
+            dataType: 'json',
+            data: {
+                message: $('#msg').val()
+            },
+            success: function () {
+                console.log('success');
+            }
+        })
+    }
+
+    function sendMsg2() {
+        $.ajax({
+            url: '/api/message/test',
+            type: 'post',
+            dataType: 'json',
+            data: {
+                message: 'This is a test message!'
+            },
+            success: function () {
+                console.log('success');
+            }
+        })
     }
 </script>
 </html>

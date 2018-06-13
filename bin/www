@@ -8,12 +8,15 @@ var app = require('../app');
 var debug = require('debug')('rabbit-mq-server:server');
 var http = require('http');
 var setting = require('../configure/index');
+const uuid = require('uuid/v1')
+
+console.log(uuid())
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(setting.port || '4000');
+var port = normalizePort(setting.server.port || '4000');
 app.set('port', port);
 
 /**
