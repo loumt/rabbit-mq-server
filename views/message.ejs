@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><%= title %></title>
+    <title>RabbitMQ消息测试页面</title>
     <link rel='stylesheet' href='/stylesheets/style.css'/>
 </head>
 <body>
-<h1><%= title %></h1>
-<p>Welcome to <%= title %></p>
+
 <input type="text" id="msg">
-<button onclick="sendMsg()">发送消息</button>
-<button onclick="sendMsg2()">test</button>
+<button onclick="sendMsg()">发送Topic消息</button>
+<hr/>
+<input type="text" id="msg2">
+<button onclick="sendMsg2()">发送Reply消息</button>
 </body>
 <script src="https://cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script>
 <script>
@@ -17,7 +18,7 @@
 
     function sendMsg() {
         $.ajax({
-            url: '/api/message/send',
+            url: '/api/message/send/topic',
             type: 'post',
             dataType: 'json',
             data: {
@@ -31,16 +32,17 @@
 
     function sendMsg2() {
         $.ajax({
-            url: '/api/message/test',
+            url: '/api/message/send/reply',
             type: 'post',
             dataType: 'json',
             data: {
-                message: 'This is a test message!'
+                message: $('#msg2').val()
             },
             success: function () {
                 console.log('success');
             }
         })
     }
+
 </script>
 </html>

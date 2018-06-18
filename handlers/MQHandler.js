@@ -1,7 +1,6 @@
 const amqplib = require('amqplib');
 const _ = require('lodash')
 const {EventEmitter} = require('events')
-const {server} = require('../configure/index')
 const DefaultOptions = {
     protocol: 'amqp',
     hostname: 'localhost',
@@ -13,6 +12,7 @@ const DefaultOptions = {
 /**
  * RabbitMq
  * event:{
+ *
  *     connect:连接成功
  *     connect-close:连接关闭
  *     connect-error:连接错误
@@ -34,28 +34,28 @@ const DefaultOptions = {
 class MQHandler extends EventEmitter {
     constructor(options, params) {
         super();
+
         this.option = {}
         this.params = {};
-        this.connection = null;
-        this.channel = null;
+
         _.assign(this.option, DefaultOptions, options)
         _.assign(this.params, params)
+
         this.connect();
     }
 
     connect() {
-        let connectPromise = amqplib.connect(this.option)
-        connectPromise.then((connect) => {
-            this.onconnect(connect);
+        amqplib.connect(this.option).then((connect) => {
+            this.emit('connect')
+
+            this.onConnect(connect)
         }).catch(error => {
-            this.emit('connect-error',error)
+            this.emit('connect-error', error)
         })
     }
 
-    onconnect(connect) {
-        this.emit('connect')
-        console.log(`[${server.port}] RabbitMQ [${this.option.hostname}] is Connect!!!`);
-        this.connection = connect;
+    onConnect(connect) {
+        this.connection = connect
         this.createChannel(connect)
     }
 
@@ -67,12 +67,12 @@ class MQHandler extends EventEmitter {
     }
 
     onclose() {
-        console.log('RabbitMq connection is closed!');
-        this.emit('connect-close');
+        console.log('RabbitMq connection is closed!')
+        this.emit('connect-close')
     }
 
     onCreateChannel(channel) {
-        this.channel = channel;
+        this.channel = channel
         this.channel.on('close', () => {
             this.emit('channel-close')
         })
@@ -86,30 +86,37 @@ class MQHandler extends EventEmitter {
             this.emit('channel-drain')
         })
 
-        this.createQueue();
-        this.createExchange();
+        this.createQueue()
+        this.createExchange()
 
         this.emit('ready')
     }
 
-    createReplyQueue(queueName){
-        this.channel.assertQueue(queueName, {durable: false});
-        this.channel.prefetch(1);
+    createReplyQueue(queueName) {
+        this.channel.assertQueue(queueName,{durable:false})
+        // this.channel.prefetch(1);
     }
 
-    sendMsgToQueueWithReply(queueName,replyQueueName,content){
-        this.channel.sendToQueue(queueName,content,{replyTo:replyQueue})
+    sendMsgToQueueWithReply(correlationId, queueName, buf) {
+        this.channel.sendToQueue(
+            queueName,
+            buf,
+            {
+                replyTo: this.params.replyQueue,
+                correlationId: correlationId
+            }
+        )
     }
 
     oncreateChannelError(e) {
-        this.emit('channel-create-error');
+        this.emit('channel-create-error')
     }
 
     createChannel(connect) {
-        let createChannelPromise = connect.createChannel();
+        let createChannelPromise = connect.createChannel()
         createChannelPromise.then(channel => {
             this.onCreateChannel(channel)
-            this.emit('channel-ready');
+            this.emit('channel-ready')
         }).catch(e => {
             this.oncreateChannelError(e)
         })
@@ -118,7 +125,6 @@ class MQHandler extends EventEmitter {
     createQueue() {
         let createQueuePromise = this.channel.assertQueue(this.params.queueName, {autoDelete: true});
         createQueuePromise.then((queue) => {
-            // queue{queue,messageCount,consumerCount}
             this.emit('queue-ready')
         }).catch(e => {
             this.emit('queue-create-error')
@@ -130,23 +136,23 @@ class MQHandler extends EventEmitter {
             durable: true,
             autoDelete: true
         })
-        createExchangePromise.then((exchange)=>{
+        createExchangePromise.then((exchange) => {
             this.emit('exchange-ready')
-        }).catch(e=>{
+        }).catch(e => {
             this.emit('exchange-create-error')
         })
     }
 
-    customerHandler(targetQueueName,customerHandler){
-        this.channel.consume(targetQueueName,customerHandler)
+    customerHandler(targetQueueName, customerHandler) {
+        this.channel.consume(targetQueueName, customerHandler)
     }
 
     deleteQueue() {
-        this.channel.deleteQueue(this.params.queueName);
+        this.channel.deleteQueue(this.params.queueName)
     }
 
     deleteExchange() {
-        this.channel.deleteExchange(this.params.exchange.name);
+        this.channel.deleteExchange(this.params.exchange.name)
     }
 }
 

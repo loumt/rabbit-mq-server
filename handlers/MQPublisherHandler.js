@@ -1,35 +1,35 @@
 "use strict";
 const MQHandler = require('./MQHandler')
 const uuid = require('uuid/v1')
-const {connect, params} = require('./../configure/index').rabbit
 
 class MQPublisherHandler extends MQHandler{
     constructor(options, params) {
         super(options, params)
+        this.id = uuid();
     }
 
-    send(content){
-        this.id = uuid();
+    /**
+     * 发送消息
+     * @param model(Object)
+     */
+    send(model){
+        if(model['id'] || !(typeof model ==='object')){
+            return console.log('RabbitMQ Msg UnSupport!');
+        }
+        //send a message user reply
+        this.sendMsgToQueueWithReply(this.id,this.params.queueName,new Buffer(JSON.stringify(model)))
 
-        this.sendMsgToQueueWithReply(params.queueName,params.replyQueue,{id:id,content:content})
+        //reply handler
+        this.createReplyCustomer(this.replyHandler)
+    }
 
-        this.createReplyCutomer(this.replyHandler)
+    createReplyCustomer(replyHandler){
+        this.customerHandler(this.params.replyQueue,replyHandler)
     }
 
     replyHandler(msg){
         console.log(`Get replyMessage  ${msg.content.toString()}`);
     }
-
-    createReplyCutomer(replyHandler){
-        this.customerHandler(this.params.replyQueue,replyHandler)
-    }
 }
 
-let publishHandler = new MQPublisherHandler(connect, params)
-
-publishHandler.on('ready',()=>{
-    console.log('publish ready!');
-})
-
-
-module.exports = publishHandler;
+module.exports = MQPublisherHandler;
