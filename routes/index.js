@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const ViewController = require('./../controllers/ViewController')
 
-router.use('/', require('./page'));
-
-router.use('/message', require('./message'));
+router.get('/home', ViewController.Home)
+router.get('/message', ViewController.Message)
 
 module.exports = router;

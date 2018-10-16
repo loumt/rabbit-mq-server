@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "test": "mocha test/mochatest"
   },
   "dependencies": {
     "amqplib": "^0.5.2",
+    "browser": "^0.2.6",
+    "chokidar": "^2.0.4",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "ejs": "~2.5.7",
@@ -21,6 +24,8 @@
     "request": "^2.85.0"
   },
   "devDependencies": {
+    "mocha": "^5.2.0",
+    "supertest": "^3.1.0",
     "uuid": "^3.2.1"
   }
 }
